@@ -72,7 +72,7 @@ static int _mainMenu(int cursor)
 
 	char modeStr[32], datamanStr[32], launcherStr[32];
 	sprintf(modeStr, "Mode: %s", sdnandMode ? "SDNAND" : "\x1B[41mSysNAND\x1B[47m");
-	sprintf(datamanStr, "\x1B[%02omEnable Data Management", devkpFound ? 037 : 047);
+	sprintf(datamanStr, "%s Data Management", !devkpFound ? "Enable" : "Disable");
 	sprintf(launcherStr, "\x1B[%02omUninstall region mod", launcherDSiFound ? 047 : 037);
 	addMenuItem(m, modeStr, NULL, 0);
 	addMenuItem(m, "Install", NULL, 0);
@@ -233,20 +233,27 @@ int main(int argc, char **argv)
 				break;
 
 			case MAIN_MENU_DATA_MANAGEMENT:
-				if (!devkpFound && (choiceBox("Make Data Management visible\nin System Settings?") == YES) && (sdnandMode || nandio_unlock_writing()))
+                char* message = !devkpFound ? "Make Data Management visible\nin System Settings?" : "Hide Data Management from\nSystem Settings?";
+				if ((choiceBox(message) == YES) && (sdnandMode || nandio_unlock_writing()))
 				{
 					//ensure sys folder exists
 					if(access(sdnandMode ? "sd:/sys" : "nand:/sys", F_OK) != 0)
 						mkdir(sdnandMode ? "sd:/sys" : "nand:/sys", 0777);
 
-					//create empty file
-					FILE *file = fopen(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", "wb");
-					fclose(file);
+                    //check whether we need to add/remove the file
+                    if (!devkpFound) {
+                        //create empty file
+                        FILE *file = fopen(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", "wb");
+                        fclose(file);
+                    } else {
+                        remove(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp");
+                    }
 
 					if(!sdnandMode)
 						nandio_lock_writing();
 					devkpFound = (access(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", F_OK) == 0);
-					messageBox("Data Management is now visible\nin System Settings.\n");
+                    char* successMessage = devkpFound ? "Data Management is now visible\nin System Settings.\n" : "Data Management is now hidden\nfrom System Settings.\n";
+					messageBox(successMessage);
 				}
 				break;
 			case MAIN_MENU_LANGUAGE_PATCHER:
