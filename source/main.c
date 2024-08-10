@@ -233,26 +233,26 @@ int main(int argc, char **argv)
 				break;
 
 			case MAIN_MENU_DATA_MANAGEMENT:
-                char* message = !devkpFound ? "Make Data Management visible\nin System Settings?" : "Hide Data Management from\nSystem Settings?";
+				char* message = !devkpFound ? "Make Data Management visible\nin System Settings?" : "Hide Data Management from\nSystem Settings?";
 				if ((choiceBox(message) == YES) && (sdnandMode || nandio_unlock_writing()))
 				{
 					//ensure sys folder exists
 					if(access(sdnandMode ? "sd:/sys" : "nand:/sys", F_OK) != 0)
 						mkdir(sdnandMode ? "sd:/sys" : "nand:/sys", 0777);
 
-                    //check whether we need to add/remove the file
-                    if (!devkpFound) {
-                        //create empty file
-                        FILE *file = fopen(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", "wb");
-                        fclose(file);
-                    } else {
-                        remove(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp");
-                    }
+					//check whether we need to add/remove the file
+					if (!devkpFound) {
+						//create empty file
+						FILE *file = fopen(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", "wb");
+						fclose(file);
+					} else {
+						remove(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp");
+					}
 
 					if(!sdnandMode)
 						nandio_lock_writing();
 					devkpFound = (access(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", F_OK) == 0);
-                    char* successMessage = devkpFound ? "Data Management is now visible\nin System Settings.\n" : "Data Management is now hidden\nfrom System Settings.\n";
+					char* successMessage = devkpFound ? "Data Management is now visible\nin System Settings.\n" : "Data Management is now hidden\nfrom System Settings.\n";
 					messageBox(successMessage);
 				}
 				break;
