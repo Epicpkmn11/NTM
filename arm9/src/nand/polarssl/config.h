@@ -1,5 +1,0 @@
-
-#define MBEDTLS_BIGNUM_C
-#define POLARSSL_AES_C
-
-#define MBEDTLS_HAVE_ASM

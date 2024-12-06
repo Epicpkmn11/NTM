@@ -1,11 +1,14 @@
 #include "main.h"
 #include "menu.h"
 #include "message.h"
-#include "nand/nandio.h"
+#include "nandio.h"
 #include "storage.h"
 #include "version.h"
 #include <dirent.h>
 #include <time.h>
+#include <unistd.h>
+
+extern unsigned g_dvmCalicoNandMount;
 
 bool programEnd = false;
 bool sdnandMode = true;
@@ -13,9 +16,6 @@ bool unlaunchFound = false;
 bool unlaunchPatches = false;
 bool devkpFound = false;
 bool launcherDSiFound = false;
-bool arm7Exiting = false;
-bool charging = false;
-u8 batteryLevel = 0;
 u8 region = 0;
 
 PrintConsole topScreen;
@@ -60,7 +60,7 @@ static int _mainMenu(int cursor)
 	iprintf("\t\tNAND Title Manager\n");
 	iprintf("\t\t\tmodified from\n");
 	iprintf("\tTitle Manager for HiyaCFW\n");
-	iprintf("\nversion %s\n", VERSION);
+	iprintf("\nversion %s\n", VER_NUMBER);
 	iprintf("\n\n\x1B[41mWARNING:\x1B[47m This tool can write to\nyour internal NAND!\n\nThis always has a risk, albeit\nlow, of \x1B[41mbricking\x1B[47m your system\nand should be done with caution!\n");
 	iprintf("\n\t  \x1B[46mhttps://dsi.cfw.guide\x1B[47m\n");
 	iprintf("\n\n \x1B[46mgithub.com/Epicpkmn11/NTM/wiki\x1B[47m\n");
@@ -80,7 +80,7 @@ static int _mainMenu(int cursor)
 	addMenuItem(m, "Titles", NULL, 0);
 	addMenuItem(m, "Restore", NULL, 0);
 	addMenuItem(m, "Test", NULL, 0);
-	addMenuItem(m, "Fix FAT copy mismatch", NULL, 0);
+	addMenuItem(m, "\x1B[37mFix FAT copy mismatch", NULL, 0); // Temporarily disabled
 	addMenuItem(m, datamanStr, NULL, 0);
 	addMenuItem(m, launcherStr, NULL, 0);
 	addMenuItem(m, "\x1B[47mExit", NULL, 0);
@@ -108,29 +108,11 @@ static int _mainMenu(int cursor)
 	return result;
 }
 
-void fifoHandlerPower(u32 value32, void* userdata)
-{
-	if (value32 == 0x54495845) // 'EXIT'
-	{
-		programEnd = true;
-		arm7Exiting = true;
-	}
-}
-
-void fifoHandlerBattery(u32 value32, void* userdata)
-{
-	batteryLevel = value32 & 0xF;
-	charging = (value32 & BIT(7)) != 0;
-}
-
 int main(int argc, char **argv)
 {
 	srand(time(0));
 	keysSetRepeat(25, 5);
 	_setupScreens();
-
-	fifoSetValue32Handler(FIFO_USER_01, fifoHandlerPower, NULL);
-	fifoSetValue32Handler(FIFO_USER_03, fifoHandlerBattery, NULL);
 
 	//DSi check
 	if (!isDSiMode())
@@ -140,16 +122,10 @@ int main(int argc, char **argv)
 	}
 
 	//setup sd card access
+	g_dvmCalicoNandMount = 2; //mount nand, with writing enabled
 	if (!fatInitDefault())
 	{
 		messageBox("fatInitDefault()...\x1B[31mFailed\n\x1B[47m");
-		return 0;
-	}
-
-	//setup nand access
-	if (!fatMountSimple("nand", &io_dsi_nand))
-	{
-		messageBox("nand init \x1B[31mfailed\n\x1B[47m");
 		return 0;
 	}
 
@@ -249,12 +225,12 @@ int main(int argc, char **argv)
 				break;
 
 			case MAIN_MENU_FIX:
-				if (nandio_unlock_writing())
-				{
-					nandio_force_fat_fix();
-					nandio_lock_writing();
-					messageBox("Mismatch in FAT copies will be\nfixed on close.\n");
-				}
+				// if (nandio_unlock_writing())
+				// {
+				// 	nandio_force_fat_fix();
+				// 	nandio_lock_writing();
+				// 	messageBox("Mismatch in FAT copies will be\nfixed on close.\n");
+				// }
 				break;
 
 			case MAIN_MENU_DATA_MANAGEMENT:
@@ -291,19 +267,6 @@ int main(int argc, char **argv)
 				break;
 		}
 	}
-
-	clearScreen(&bottomScreen);
-	printf("Unmounting NAND...\n");
-	fatUnmount("nand:");
-	printf("Merging stages...\n");
-	nandio_shutdown();
-
-	fifoSendValue32(FIFO_USER_02, 0x54495845); // 'EXIT'
-
-	while (arm7Exiting)
-		swiWaitForVBlank();
-
-	return 0;
 }
 
 void clearScreen(PrintConsole* screen)

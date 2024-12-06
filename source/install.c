@@ -3,14 +3,15 @@
 #include "main.h"
 #include "message.h"
 #include "maketmd.h"
-#include "nand/crypto.h"
-#include "nand/nandio.h"
-#include "nand/ticket0.h"
+#include "crypto/crypto.h"
+#include "nandio.h"
 #include "rom.h"
 #include "storage.h"
+#include "crypto/ticket0.h"
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 static bool _titleIsUsed(tDSiHeader* h)
 {
@@ -285,7 +286,7 @@ static void _createBannerSav(tDSiHeader* h, char* dataPath)
 	}
 }
 
-static void _createTicket(tDSiHeader *h, char* ticketPath)
+static void createTicket(tDSiHeader *h, char* ticketPath)
 {
 	if (!h) return;
 
@@ -356,6 +357,9 @@ bool install(char* fpath, bool systemTitle)
 	bool result = false;
 
 	//check battery level
+	u32 batteryState = pmGetBatteryState();
+	u32 batteryLevel = batteryState & 0xF;
+	bool charging = batteryState & BIT(7);
 	while (batteryLevel < 7 && !charging)
 	{
 		if (choiceBox("\x1B[47mBattery is too low!\nPlease plug in the console.\n\nContinue?") == NO)
@@ -844,7 +848,7 @@ bool install(char* fpath, bool systemTitle)
 			siprintf(ticketPath, "%s/%08lx.tik", ticketPath, h->tid_low);
 
 			if (access(ticketPath, F_OK) != 0 || (choicePrint("Ticket already exists.\nKeep it? (recommended)") == NO && choicePrint("Are you sure?") == YES))
-				_createTicket(h, ticketPath);
+				createTicket(h, ticketPath);
 		}
 
 		//end

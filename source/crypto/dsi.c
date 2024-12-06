@@ -1,6 +1,5 @@
 #include "dsi.h"
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "u128_math.h"
@@ -53,7 +52,7 @@ void dsi_set_ctr(dsi_context* ctx, const unsigned char ctr[16])
 		ctx->ctr[i] = ctr[15-i];
 }
 
-void dsi_init_ctr(dsi_context* ctx, const unsigned char key[16], const unsigned char ctr[12])
+void dsi_init_ctr(dsi_context* ctx, const unsigned char key[16], const unsigned char ctr[16])
 {
 	dsi_set_key(ctx, key);
 	dsi_set_ctr(ctx, ctr);

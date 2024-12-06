@@ -8,5 +8,3 @@
 *.vscode
 *.DS_Store
 *._*
-
-arm9/include/version.h

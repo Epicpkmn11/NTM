@@ -83,55 +83,6 @@ int aes_crypt_ecb( aes_context *ctx,
                     const unsigned char input[16],
                     unsigned char output[16] );
 
-/**
- * \brief          AES-CBC buffer encryption/decryption
- *                 Length should be a multiple of the block
- *                 size (16 bytes)
- *
- * \param ctx      AES context
- * \param mode     AES_ENCRYPT or AES_DECRYPT
- * \param length   length of the input data
- * \param iv       initialization vector (updated after use)
- * \param input    buffer holding the input data
- * \param output   buffer holding the output data
- *
- * \return         0 if successful, or POLARSSL_ERR_AES_INVALID_INPUT_LENGTH
- */
-int aes_crypt_cbc( aes_context *ctx,
-                    int mode,
-                    int length,
-                    unsigned char iv[16],
-                    const unsigned char *input,
-                    unsigned char *output );
-
-/**
- * \brief          AES-CFB128 buffer encryption/decryption.
- *
- * \param ctx      AES context
- * \param mode     AES_ENCRYPT or AES_DECRYPT
- * \param length   length of the input data
- * \param iv_off   offset in IV (updated after use)
- * \param iv       initialization vector (updated after use)
- * \param input    buffer holding the input data
- * \param output   buffer holding the output data
- *
- * \return         0 if successful
- */
-int aes_crypt_cfb128( aes_context *ctx,
-                       int mode,
-                       int length,
-                       int *iv_off,
-                       unsigned char iv[16],
-                       const unsigned char *input,
-                       unsigned char *output );
-
-/**
- * \brief          Checkup routine
- *
- * \return         0 if successful, or 1 if the test failed
- */
-int aes_self_test( int verbose );
-
 #ifdef __cplusplus
 }
 #endif

@@ -2,9 +2,10 @@
 #include "rom.h"
 #include "menu.h"
 #include "message.h"
-#include "nand/nandio.h"
+#include "nandio.h"
 #include "storage.h"
 #include <dirent.h>
+#include <unistd.h>
 
 enum {
 	TITLE_MENU_BACKUP,

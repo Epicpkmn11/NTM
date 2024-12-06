@@ -1,7 +1,7 @@
 #ifndef _DSI_H_
 #define _DSI_H_
 
-#include "polarssl/aes.h"
+#include "aes.h"
 
 typedef struct
 {
@@ -33,7 +33,7 @@ void dsi_add_ctr(dsi_context* ctx, unsigned int carry);
 
 void dsi_set_ctr(dsi_context* ctx, const unsigned char ctr[16]);
 
-void dsi_init_ctr(dsi_context* ctx, const unsigned char key[16], const unsigned char ctr[12]);
+void dsi_init_ctr(dsi_context* ctx, const unsigned char key[16], const unsigned char ctr[16]);
 
 void dsi_crypt_ctr(dsi_context* ctx, const void* in, void* out, unsigned int len);
 

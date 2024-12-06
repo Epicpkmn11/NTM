@@ -5,6 +5,7 @@
 #include <nds.h>
 #include <malloc.h>
 #include <stdio.h>
+#include <unistd.h>
 
 tDSiHeader* getRomHeader(char const* fpath)
 {

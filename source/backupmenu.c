@@ -4,9 +4,10 @@
 #include "rom.h"
 #include "storage.h"
 #include "message.h"
-#include "nand/nandio.h"
+#include "nandio.h"
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 enum {
 	BACKUP_MENU_RESTORE,
