@@ -124,7 +124,7 @@ int copyFilePart(char const* src, u32 offset, u32 size, char const* dst)
 			#define BUFF_SIZE 128 //Arbitrary. A value too large freezes the ds.
 			char* buffer = (char*)malloc(BUFF_SIZE);
 
-			while (!programEnd)
+			while (pmMainLoop())
 			{
 				unsigned int toRead = BUFF_SIZE;
 				if (size - totalBytesRead < BUFF_SIZE)

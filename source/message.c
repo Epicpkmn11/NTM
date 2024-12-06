@@ -3,7 +3,7 @@
 
 void keyWait(u32 key)
 {
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -25,7 +25,7 @@ bool choiceBox(char* message)
 	iprintf("\x1B[47m");	//white
 	iprintf("\x1b[%d;0H\tYes\n\tNo\n", choiceRow);
 
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -62,7 +62,7 @@ bool choicePrint(char* message)
 	iprintf("\x1B[47m");	//white
 	iprintf("Yes - [A]\nNo  - [B]\n");
 
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -105,7 +105,7 @@ bool randomConfirmBox(char* message)
 	iprintf("\x1B[47m");	//white
 	iprintf("\n<START> cancel\n");
 
-	while (!programEnd && sequencePosition < sizeof(sequence))
+	while (pmMainLoop() && sequencePosition < sizeof(sequence))
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -148,7 +148,7 @@ void messagePrint(char* message)
 	iprintf("%s\n", message);
 	iprintf("\nOkay - [A]\n");
 
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
 		scanKeys();

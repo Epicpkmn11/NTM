@@ -35,7 +35,7 @@ void backupMenu()
 	}
 	else
 	{
-		while (!programEnd)
+		while (pmMainLoop())
 		{
 			swiWaitForVBlank();
 			scanKeys();
@@ -91,7 +91,7 @@ static int subMenu()
 
 	printMenu(m);
 
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
 		scanKeys();

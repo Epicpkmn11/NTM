@@ -10,7 +10,6 @@
 
 extern unsigned g_dvmCalicoNandMount;
 
-bool programEnd = false;
 bool sdnandMode = true;
 bool unlaunchFound = false;
 bool unlaunchPatches = false;
@@ -90,7 +89,7 @@ static int _mainMenu(int cursor)
 	//bottom screen
 	printMenu(m);
 
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -197,7 +196,7 @@ int main(int argc, char **argv)
 	//main menu
 	int cursor = 0;
 
-	while (!programEnd)
+	while (pmMainLoop())
 	{
 		cursor = _mainMenu(cursor);
 
@@ -263,8 +262,7 @@ int main(int argc, char **argv)
 				break;
 
 			case MAIN_MENU_EXIT:
-				programEnd = true;
-				break;
+				return 0;
 		}
 	}
 }

@@ -5,7 +5,6 @@
 #include <fat.h>
 #include <stdio.h>
 
-extern bool programEnd;
 extern bool sdnandMode;
 extern bool unlaunchFound;
 extern bool unlaunchPatches;
