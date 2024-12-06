@@ -76,8 +76,8 @@ bool getGameTitle(tNDSBanner* b, char* out, bool full)
 	//get system language
 	int lang = PersonalData->language;
 
-	//not japanese or chinese
-	if (lang == 0 || lang == 6)
+	//not japanese, chinese, or korean
+	if (lang == 0 || lang >= 6)
 		lang = 1;
 
 	//read title
