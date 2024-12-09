@@ -241,12 +241,21 @@ int main(int argc, char **argv)
 						mkdir(sdnandMode ? "sd:/sys" : "nand:/sys", 0777);
 
 					//check whether we need to add/remove the file
-					if (!devkpFound) {
+					char *path = sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp";
+					if (!devkpFound)
+					{
 						//create empty file
-						FILE *file = fopen(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", "wb");
+						FILE *file = fopen(path, "wb");
 						fclose(file);
-					} else {
-						remove(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp");
+					}
+					else
+					{
+						//remove file, if not 0 bytes (fake file see above)
+						//prompt to make sure
+						u32 size = getFileSizePath(path);
+						bool res = (size == 0) || choiceBox("dev.kp is not empty! This is\nprobably a real dev.kp, which\ncannot be regenerated,\ndelete anyways?");
+						if(res)
+							remove(path);
 					}
 
 					if(!sdnandMode)
