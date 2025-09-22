@@ -1,6 +1,7 @@
 name: Build NAND Title Manager
 
 on:
+  workflow_dispatch:
   push:
     branches: ["*"]
     paths-ignore:
