@@ -168,7 +168,7 @@ endif
 
 # Print new version if changed
 ifeq (,$(findstring $(GIT_VER), $(shell cat version.h)))
- $(shell printf "#ifndef VERSION_H\n#define VERSION_HPP\n\n#define VER_NUMBER \"$(GIT_VER)\"\n\n#endif\n" > version.h)
+ $(shell printf "#ifndef VERSION_H\n#define VERSION_H\n\n#define VER_NUMBER \"$(GIT_VER)\"\n\n#endif\n" > version.h)
 endif
 
 #---------------------------------------------------------------------------------
