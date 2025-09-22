@@ -155,15 +155,23 @@ int main(int argc, char **argv)
 				{0xB079, 0x484E1841}, // 2.0 (Patched)
 			};
 
+        	// open TMD for safe installer check and patch detection
 			FILE *tmd = fopen(path, "rb");
 			if (tmd)
 			{
-				for (int i = 0; i < sizeof(tidValues) / sizeof(tidValues[0]); i++)
+				// safe installer check (byte 0x190 == 0x47)
+				fseek(tmd, 0x190, SEEK_SET);
+				unsigned char val;
+				fread(&val, 1, 1, tmd);
+				if (val == 0x47)
+					unlaunchFound = true;
+
+				for (int i = 0; i < sizeof(tidValues)/sizeof(tidValues[0]); i++)
 				{
-					if (fseek(file, tidValues[i][0], SEEK_SET) == 0)
+					if (fseek(tmd, tidValues[i][0], SEEK_SET) == 0)
 					{
 						u32 tidVal;
-						fread(&tidVal, sizeof(u32), 1, file);
+						fread(&tidVal, sizeof(u32), 1, tmd);
 						if (tidVal == tidValues[i][1])
 						{
 							unlaunchPatches = true;
@@ -171,8 +179,11 @@ int main(int argc, char **argv)
 						}
 					}
 				}
+
+				fclose(tmd);
 			}
 		}
+	
 
 		if (!unlaunchFound)
 		{
