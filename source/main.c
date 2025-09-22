@@ -142,33 +142,58 @@ int main(int argc, char **argv)
 
 			char path[64];
 			sprintf(path, "nand:/title/00030017/%08lx/content/title.tmd", launcherTid);
+
+			// check for traditional unlaunch install
 			unsigned long long tmdSize = getFileSizePath(path);
 			if (tmdSize > 520)
+			{
 				unlaunchFound = true;
 
-			//check if launcher patches are enabled
-			const static u32 tidValues[][2] = {
-				// {location, value}
-				{0xE439, 0x382E3176}, // 1.8
-				{0xB07C, 0x17484E41}, // 1.9
-				{0xB099, 0x17484E41}, // 2.0 (Normal)
-				{0xB079, 0x484E1841}, // 2.0 (Patched)
-			};
+				//check if launcher patches are enabled
+				const static u32 tidValues[][2] = {
+					// {location, value}
+					{0xE439, 0x382E3176}, // 1.8
+					{0xB07C, 0x17484E41}, // 1.9
+					{0xB099, 0x17484E41}, // 2.0 (Normal)
+					{0xB079, 0x484E1841}, // 2.0 (Patched)
+				};
 
-			FILE *tmd = fopen(path, "rb");
-			if (tmd)
-			{
-				for (int i = 0; i < sizeof(tidValues) / sizeof(tidValues[0]); i++)
+				FILE *tmd = fopen(path, "rb");
+				if (tmd)
 				{
-					if (fseek(file, tidValues[i][0], SEEK_SET) == 0)
+					for (int i = 0; i < sizeof(tidValues) / sizeof(tidValues[0]); i++)
 					{
-						u32 tidVal;
-						fread(&tidVal, sizeof(u32), 1, file);
-						if (tidVal == tidValues[i][1])
+						if (fseek(tmd, tidValues[i][0], SEEK_SET) == 0)
 						{
-							unlaunchPatches = true;
-							break;
+							u32 tidVal;
+							fread(&tidVal, sizeof(u32), 1, tmd);
+							if (tidVal == tidValues[i][1])
+							{
+								unlaunchPatches = true;
+								fclose(tmd);
+								break;
+							}
 						}
+					}
+					fclose(tmd);
+				}
+			}
+			else // check for "safe" unlaunch install
+			{
+				FILE *tmd = fopen(path, "rb");
+				if (tmd)
+				{
+					// check if its "corrupted" byte is present
+					fseek(tmd, 0x190, SEEK_SET);
+					unsigned char val;
+					fread(&val, 1, 1, tmd);
+					fclose(tmd);
+
+					if (val == 0x47)
+					{
+						// the safe installer always has patches enabled
+						unlaunchFound = true;
+						unlaunchPatches = true;
 					}
 				}
 			}
