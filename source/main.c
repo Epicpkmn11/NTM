@@ -179,8 +179,6 @@ int main(int argc, char **argv)
 						}
 					}
 				}
-
-				fclose(tmd);
 			}
 		}
 	
@@ -299,3 +297,4 @@ void clearScreen(PrintConsole* screen)
 	consoleSelect(screen);
 	consoleClear();
 }
+
