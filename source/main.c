@@ -72,7 +72,7 @@ static int _mainMenu(int cursor)
 
 	char modeStr[32], datamanStr[32], launcherStr[32];
 	sprintf(modeStr, "Mode: %s", sdnandMode ? "SDNAND" : "\x1B[41mSysNAND\x1B[47m");
-	sprintf(datamanStr, "%s Data Management", !devkpFound ? "Enable" : "Disable");
+	sprintf(datamanStr, "\x1B[47m%s Data Management", !devkpFound ? "Enable" : "Disable");
 	sprintf(launcherStr, "\x1B[%02omUninstall region mod", launcherDSiFound ? 047 : 037);
 	addMenuItem(m, modeStr, NULL, 0);
 	addMenuItem(m, "Install", NULL, 0);
