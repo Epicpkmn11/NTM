@@ -6,22 +6,20 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-ifneq (,$(shell which python3))
-PYTHON	:= python3
-else ifneq (,$(shell which python2))
-PYTHON	:= python2
-else ifneq (,$(shell which python))
-PYTHON	:= python
-else
-$(error "Python not found in PATH, please install it.")
-endif
+TOPDIR ?= $(CURDIR)
+export TOPDIR
 
 # These set the information text in the nds file
+GAME_TITLE     := NAND Title Manager
+GAME_SUBTITLE1 := JeffRuLz, Pk11
+GAME_ICON      := $(TOPDIR)/icon.bmp
+
 GAME_CODE  := HTMA
 GAME_LABEL := NANDTM
-GAME_ICON  := icon.bmp
 
 include $(DEVKITARM)/ds_rules
+
+_ARM7_ELF  :=	-7 $(DEVKITPRO)/calico/bin/ds7_lykoi.elf
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -71,7 +69,7 @@ endif
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS := $(LIBNDS) $(PORTLIBS) $(CURDIR)/libs
+LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -176,12 +174,13 @@ endif
 #---------------------------------------------------------------------------------
 all: $(OUTPUT).dsi
 
-$(OUTPUT).dsi: $(OUTPUT).elf $(NITRO_FILES) $(GAME_ICON)
+$(OUTPUT).dsi: $(OUTPUT).elf
 	$(SILENTCMD)ndstool -c $@ -9 $(OUTPUT).elf $(_ARM7_ELF) $(_ADDFILES) \
-		-g $(GAME_CODE) 00 "$(GAME_LABEL)" -z 80040000 -u 00030004
+		-g $(GAME_CODE) 00 "$(GAME_LABEL)" -z 80040000 -u 00030004 \
+		-b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1)"
 	@echo built ... $(notdir $@)
 
-$(OUTPUT).elf: $(OFILES)
+$(OUTPUT).elf: $(OFILES) $(NITRO_FILES)
 
 # source files depend on generated headers
 $(OFILES_SOURCES) : $(HFILES)
