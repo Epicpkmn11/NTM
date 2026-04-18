@@ -182,8 +182,9 @@ static void _createPublicSav(tDSiHeader* h, char* dataPath)
 			}
 			else
 			{
-				fseek(f, h->public_sav_size-1, SEEK_SET);
-				fputc(0, f);
+				for (int i = 0; i < h->public_sav_size; i++)
+					fputc(0, f);
+
 				initFatHeader(f);
 
 				iprintf("\x1B[42m");	//green
@@ -227,8 +228,9 @@ static void _createPrivateSav(tDSiHeader* h, char* dataPath)
 			}
 			else
 			{
-				fseek(f, h->private_sav_size-1, SEEK_SET);
-				fputc(0, f);
+				for (int i = 0; i < h->public_sav_size; i++)
+					fputc(0, f);
+				
 				initFatHeader(f);
 
 				iprintf("\x1B[42m");	//green
