@@ -174,7 +174,8 @@ static void _createPublicSav(tDSiHeader* h, char* dataPath)
 			char* publicPath = (char*)malloc(strlen(dataPath) + strlen("/public.sav") + 1);
 			sprintf(publicPath, "%s/public.sav", dataPath);
 
-			FILE* f = fopen(publicPath, "wb");
+			padFile(publicPath, h->public_sav_size);
+			FILE* f = fopen(publicPath, "rb+");
 
 			if (!f)
 			{
@@ -184,8 +185,6 @@ static void _createPublicSav(tDSiHeader* h, char* dataPath)
 			}
 			else
 			{
-				fseek(f, h->public_sav_size-1, SEEK_SET);
-				fputc(0, f);
 				initFatHeader(f);
 
 				printf("\x1B[42m");	//green
@@ -219,7 +218,8 @@ static void _createPrivateSav(tDSiHeader* h, char* dataPath)
 			char* privatePath = (char*)malloc(strlen(dataPath) + strlen("/private.sav") + 1);
 			sprintf(privatePath, "%s/private.sav", dataPath);
 
-			FILE* f = fopen(privatePath, "wb");
+			padFile(privatePath, h->private_sav_size);
+			FILE* f = fopen(privatePath, "rb+");
 
 			if (!f)
 			{
@@ -229,8 +229,6 @@ static void _createPrivateSav(tDSiHeader* h, char* dataPath)
 			}
 			else
 			{
-				fseek(f, h->private_sav_size-1, SEEK_SET);
-				fputc(0, f);
 				initFatHeader(f);
 
 				printf("\x1B[42m");	//green
@@ -264,9 +262,7 @@ static void _createBannerSav(tDSiHeader* h, char* dataPath)
 			char* bannerPath = (char*)malloc(strlen(dataPath) + strlen("/banner.sav") + 1);
 			sprintf(bannerPath, "%s/banner.sav", dataPath);
 
-			FILE* f = fopen(bannerPath, "wb");
-
-			if (!f)
+			if (!padFile(bannerPath, 0x4000))
 			{
 				printf("\x1B[31m");	//red
 				printf("Failed\n");
@@ -274,15 +270,11 @@ static void _createBannerSav(tDSiHeader* h, char* dataPath)
 			}
 			else
 			{
-				fseek(f, 0x4000 - 1, SEEK_SET);
-				fputc(0, f);
-
 				printf("\x1B[42m");	//green
 				printf("Done\n");
 				printf("\x1B[47m");	//white
 			}
 
-			fclose(f);
 			free(bannerPath);
 		}
 	}
