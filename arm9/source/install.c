@@ -483,7 +483,7 @@ bool install(char* fpath, bool systemTitle)
 			{
 				//check if title exists, if it does then show any error
 				//otherwise allow reinstalling it
-				char path[PATH_MAX];
+				char path[48];
 				sprintf(path, "nand:/title/%08lx/%08lx/content/title.tmd", h->tid_high, h->tid_low);
 				if (access(path, F_OK) == 0)
 				{
@@ -522,7 +522,7 @@ bool install(char* fpath, bool systemTitle)
 
 		//check for legit TMD, if found we'll generate a ticket which increases the size
 		int extensionPos = strrchr(fpath, '.') - fpath;
-		char tmdPath[PATH_MAX];
+		char tmdPath[128];
 		strcpy(tmdPath, fpath);
 		strcpy(tmdPath + extensionPos, ".tmd");
 		//DSi TMDs are 520, TMDs from NUS are 2,312. If 2,312 we can simply trim it to 520
@@ -589,7 +589,7 @@ bool install(char* fpath, bool systemTitle)
 		}
 
 		//check for saves
-		char pubPath[PATH_MAX];
+		char pubPath[128];
 		strcpy(pubPath, fpath);
 		strcpy(pubPath + extensionPos, ".pub");
 		bool pubFound = getFileSizePath(pubPath) == h->public_sav_size;
@@ -601,7 +601,7 @@ bool install(char* fpath, bool systemTitle)
 				goto error;
 		}
 
-		char prvPath[PATH_MAX];
+		char prvPath[128];
 		strcpy(prvPath, fpath);
 		strcpy(prvPath + extensionPos, ".prv");
 		bool prvFound = getFileSizePath(prvPath) == h->private_sav_size;
@@ -613,7 +613,7 @@ bool install(char* fpath, bool systemTitle)
 				goto error;
 		}
 
-		char bnrPath[PATH_MAX];
+		char bnrPath[128];
 		strcpy(bnrPath, fpath);
 		strcpy(bnrPath + extensionPos, ".bnr");
 		bool bnrFound = getFileSizePath(bnrPath) == 0x4000;
