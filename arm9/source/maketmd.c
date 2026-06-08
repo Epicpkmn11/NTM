@@ -114,6 +114,7 @@ void tmd_create(uint8_t* tmd, FILE* app)
 		uint32_t buffer_read = 0;
 
 		swiSHA1context_t ctx;
+		ctx.sha_block = 0;
 		swiSHA1Init(&ctx);
 
 		do {
