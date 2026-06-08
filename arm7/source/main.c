@@ -7,9 +7,7 @@
 
 // Default ARM7 core
 
-#include <dswifi7.h>
 #include <nds.h>
-#include <maxmod7.h>
 
 volatile bool exit_loop = false;
 
@@ -21,14 +19,10 @@ void power_button_callback(void)
 void vblank_handler(void)
 {
     inputGetAndSend();
-    Wifi_Update();
 }
 
 int main(int argc, char *argv[])
 {
-    // Initialize sound hardware
-    enableSound();
-
     // Read user information from the firmware (name, birthday, etc)
     readUserSettings();
 
@@ -43,14 +37,9 @@ int main(int argc, char *argv[])
     irqInit();
     fifoInit();
 
-    installSoundFIFO();
     installSystemFIFO(); // Sleep mode, storage, firmware...
-    installWifiFIFO();
     if (isDSiMode())
         installCameraFIFO();
-
-    // Initialize Maxmod. It uses timer 0 internally.
-    mmInstall(FIFO_MAXMOD);
 
     // This sets a callback that is called when the power button in a DSi
     // console is pressed. It has no effect in a DS.

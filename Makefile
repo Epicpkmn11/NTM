@@ -85,7 +85,7 @@ clean:
 	@echo "  CLEAN"
 	$(V)$(MAKE) -f Makefile.arm9 clean --no-print-directory
 	$(V)$(MAKE) -f Makefile.arm7 clean --no-print-directory
-	$(V)$(RM) $(ROM) build $(SDIMAGE) compile_commands.json
+	$(V)$(RM) $(ROM) build $(SDIMAGE) compile_commands.json arm9/include/version.h
 
 arm9:
 	$(V)+$(MAKE) -f Makefile.arm9 COMPDB=$(COMPDB) --no-print-directory
