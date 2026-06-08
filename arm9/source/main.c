@@ -14,6 +14,8 @@
 extern unsigned g_dvmCalicoNandMount;
 
 bool sdnandMode = true;
+bool useFlashcard = false;
+bool multipleDrives = false;
 bool unlaunchFound = false;
 bool unlaunchPatches = false;
 bool devkpFound = false;
@@ -25,6 +27,7 @@ PrintConsole bottomScreen;
 
 enum {
 	MAIN_MENU_MODE,
+	MAIN_MENU_SD,
 	MAIN_MENU_INSTALL,
 	MAIN_MENU_TITLES,
 	MAIN_MENU_BACKUP,
@@ -73,12 +76,14 @@ static int _mainMenu(int cursor)
 	Menu* m = newMenu();
 	setMenuHeader(m, "MAIN MENU");
 
-	char modeStr[32], datamanStr[32], launcherStr[32];
+	char modeStr[32], sdStr[32], datamanStr[32], launcherStr[32];
 	sprintf(modeStr, "Mode: %s", sdnandMode ? "SDNAND" : "\x1B[41mSysNAND\x1B[47m");
+	sprintf(sdStr, "\x1B[%02omSD Card: %s", multipleDrives ? 047 : 037, useFlashcard ? "fat:/ (Slot-1)" : "sd:/ (Internal)");
 	sprintf(datamanStr, "\x1B[47m%s Data Management", !devkpFound ? "Enable" : "Disable");
 	sprintf(launcherStr, "\x1B[%02omUninstall region mod", launcherDSiFound ? 047 : 037);
 	addMenuItem(m, modeStr, NULL, 0);
-	addMenuItem(m, "Install", NULL, 0);
+	addMenuItem(m, sdStr, NULL, 0);
+	addMenuItem(m, "\x1B[47mInstall", NULL, 0);
 	addMenuItem(m, "Titles", NULL, 0);
 	addMenuItem(m, "Restore", NULL, 0);
 	addMenuItem(m, "Test", NULL, 0);
@@ -129,6 +134,13 @@ int main(int argc, char **argv)
 	{
 		messageBox("fatInitDefault()...\x1B[31mFailed\n\x1B[47m");
 		return 0;
+	}
+	else
+	{
+		char path[16];
+		getcwd(path, 16);
+		useFlashcard = strcmp(path, "fat:/") == 0;
+		multipleDrives = access(useFlashcard ? "sd:/" : "fat:/", F_OK) == 0;
 	}
 
 	//setup NAND access
@@ -234,7 +246,7 @@ int main(int argc, char **argv)
 	}
 
 	//check for dev.kp (Data Management visible)
-	devkpFound = (access("sd:/sys/dev.kp", F_OK) == 0);
+	devkpFound = (access("/sys/dev.kp", F_OK) == 0);
 
 	//check for launcher.dsi (Language patcher)
 	launcherDSiFound = (access("nand:/launcher.dsi", F_OK) == 0);
@@ -253,7 +265,15 @@ int main(int argc, char **argv)
 		{
 			case MAIN_MENU_MODE:
 				sdnandMode = !sdnandMode;
-				devkpFound = (access(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", F_OK) == 0);
+				devkpFound = (access(sdnandMode ? "/sys/dev.kp" : "nand:/sys/dev.kp", F_OK) == 0);
+				break;
+
+			case MAIN_MENU_SD:
+				if (multipleDrives)
+				{
+					useFlashcard = !useFlashcard;
+					chdir(useFlashcard ? "fat:/" : "sd:/");
+				}
 				break;
 
 			case MAIN_MENU_INSTALL:
@@ -286,11 +306,11 @@ int main(int argc, char **argv)
 				if ((choiceBox(message) == YES) && (sdnandMode || nandio_unlock_writing()))
 				{
 					//ensure sys folder exists
-					if(access(sdnandMode ? "sd:/sys" : "nand:/sys", F_OK) != 0)
-						mkdir(sdnandMode ? "sd:/sys" : "nand:/sys", 0777);
+					if(access(sdnandMode ? "/sys" : "nand:/sys", F_OK) != 0)
+						mkdir(sdnandMode ? "/sys" : "nand:/sys", 0777);
 
 					//check whether we need to add/remove the file
-					char *path = sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp";
+					char *path = sdnandMode ? "/sys/dev.kp" : "nand:/sys/dev.kp";
 					if (!devkpFound)
 					{
 						//create empty file
@@ -309,7 +329,7 @@ int main(int argc, char **argv)
 
 					if(!sdnandMode)
 						nandio_lock_writing();
-					devkpFound = (access(sdnandMode ? "sd:/sys/dev.kp" : "nand:/sys/dev.kp", F_OK) == 0);
+					devkpFound = (access(sdnandMode ? "/sys/dev.kp" : "nand:/sys/dev.kp", F_OK) == 0);
 					char* successMessage = devkpFound ? "Data Management is now visible\nin System Settings.\n" : "Data Management is now hidden\nfrom System Settings.\n";
 					messageBox(successMessage);
 				}

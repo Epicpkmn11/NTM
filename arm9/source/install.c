@@ -20,7 +20,7 @@ static bool _titleIsUsed(tDSiHeader* h)
 	if (!h) return false;
 
 	char path[64];
-	sprintf(path, "%s:/title/%08x/%08x/", sdnandMode ? "sd" : "nand", (unsigned int)h->tid_high, (unsigned int)h->tid_low);
+	sprintf(path, "%s/title/%08x/%08x/", sdnandMode ? "" : "nand:", (unsigned int)h->tid_high, (unsigned int)h->tid_low);
 
 	return dirExists(path);
 }
@@ -638,12 +638,12 @@ bool install(char* fpath, bool systemTitle)
 
 		//create title directory /title/XXXXXXXX/XXXXXXXX
 		char dirPath[32];
-		mkdir(sdnandMode ? "sd:/title" : "nand:/title", 0777);
+		mkdir(sdnandMode ? "/title" : "nand:/title", 0777);
 
-		sprintf(dirPath, "%s:/title/%08x", sdnandMode ? "sd" : "nand", (unsigned int)h->tid_high);
+		sprintf(dirPath, "%s/title/%08x", sdnandMode ? "" : "nand:", (unsigned int)h->tid_high);
 		mkdir(dirPath, 0777);
 
-		sprintf(dirPath, "%s:/title/%08x/%08x", sdnandMode ? "sd" : "nand", (unsigned int)h->tid_high, (unsigned int)h->tid_low);
+		sprintf(dirPath, "%s/title/%08x/%08x", sdnandMode ? "" : "nand:", (unsigned int)h->tid_high, (unsigned int)h->tid_low);
 
 		//check if title is free
 		if (_titleIsUsed(h))
@@ -841,13 +841,13 @@ bool install(char* fpath, bool systemTitle)
 		{
 			//ensure folders exist
 			char ticketPath[35];
-			sprintf(ticketPath, "%s:/ticket", sdnandMode ? "sd" : "nand");
+			sprintf(ticketPath, "%s/ticket", sdnandMode ? "" : "nand:");
 			mkdir(ticketPath, 0777);
-			sprintf(ticketPath, "%s:/ticket/%08lx", sdnandMode ? "sd" : "nand", h->tid_high);
+			sprintf(ticketPath, "%s/ticket/%08lx", sdnandMode ? "" : "nand:", h->tid_high);
 			mkdir(ticketPath, 0777);
 
 			//actual tik path
-			sprintf(ticketPath, "%s:/ticket/%08lx/%08lx.tik", sdnandMode ? "sd" : "nand", h->tid_high, h->tid_low);
+			sprintf(ticketPath, "%s/ticket/%08lx/%08lx.tik", sdnandMode ? "" : "nand:", h->tid_high, h->tid_low);
 
 			if (access(ticketPath, F_OK) != 0 || (choicePrint("Ticket already exists.\nKeep it? (recommended)") == NO && choicePrint("Are you sure?") == YES))
 				createTicket(h, ticketPath);

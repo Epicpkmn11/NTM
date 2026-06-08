@@ -4,7 +4,7 @@
 #include <nds/ndstypes.h>
 #include <stdio.h>
 
-#define BACKUP_PATH "sd:/_nds/ntm/backup"
+#define BACKUP_PATH "/_nds/ntm/backup"
 #define BYTES_PER_BLOCK (1024*128)
 
 //printing

@@ -134,7 +134,7 @@ static void generateList(Menu* m)
 	for (int i = 0; i < NUM_OF_DIRS && done == false; i++)
 	{
 		char* dirPath = (char*)malloc(strlen(dirs[i])+15);
-		sprintf(dirPath, "%s:/title/%s", sdnandMode ? "sd" : "nand", dirs[i]);
+		sprintf(dirPath, "%s/title/%s", sdnandMode ? "" : "nand:", dirs[i]);
 
 		struct dirent* ent;
 		DIR* dir = opendir(dirPath);
@@ -329,7 +329,7 @@ static void backup(Menu* m)
 	if (choice == YES)
 	{
 		char srcpath[30];
-		sprintf(srcpath, "%s:/title/%08lx/%08lx", sdnandMode ? "sd" : "nand", h->tid_high, h->tid_low);
+		sprintf(srcpath, "%s/title/%08lx/%08lx", sdnandMode ? "" : "nand:", h->tid_high, h->tid_low);
 
 		if (getSDCardFree() < getDirSize(srcpath, 0))
 		{
@@ -349,7 +349,7 @@ static void backup(Menu* m)
 					mkdir(backupPath, 0777);
 					*slash = temp;
 				}
-				mkdir(backupPath, 0777); // sd:/_nds/ntm/backup
+				mkdir(backupPath, 0777); // /_nds/ntm/backup
 			}
 
 			clearScreen(&bottomScreen);
@@ -489,7 +489,7 @@ static void toggleReadOnly(Menu* m)
 
 	char path[256];
 	char srcpath[30];
-	sprintf(srcpath, "%s:/title/%08lx/%08lx", sdnandMode ? "sd" : "nand", h->tid_high, h->tid_low);
+	sprintf(srcpath, "%s/title/%08lx/%08lx", sdnandMode ? "" : "nand:", h->tid_high, h->tid_low);
 
 	if (!sdnandMode && !nandio_unlock_writing()) return;
 

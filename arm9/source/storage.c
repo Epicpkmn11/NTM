@@ -452,7 +452,7 @@ int getMenuSlotsFree()
 	for (int i = 0; i < NUM_OF_DIRS; i++)
 	{
 		char path[256];
-		sprintf(path, "%s:/title/%s", sdnandMode ? "sd" : "nand", dirs[i]);
+		sprintf(path, "%s/title/%s", sdnandMode ? "" : "nand:", dirs[i]);
 
 		dir = opendir(path);
 
@@ -486,7 +486,7 @@ unsigned long long getSDCardSize()
 	if (sdIsInserted())
 	{
 		struct statvfs st;
-		if (statvfs("sd:/", &st) == 0)
+		if (statvfs("/", &st) == 0)
 			return st.f_bsize * st.f_blocks;
 	}
 
@@ -498,7 +498,7 @@ unsigned long long getSDCardFree()
 	if (sdIsInserted())
 	{
 		struct statvfs st;
-		if (statvfs("sd:/", &st) == 0)
+		if (statvfs("/", &st) == 0)
 			return st.f_bsize * st.f_bavail;
 	}
 
@@ -519,7 +519,7 @@ unsigned long long getDsiFree()
 
 	//Get free space by subtracting file sizes in nand folders
 	unsigned long long size = getDsiSize();
-	unsigned long long appSize = getDirSize(sdnandMode ? "sd:/title/00030004" : "nand:/title/00030004", blockSize);
+	unsigned long long appSize = getDirSize(sdnandMode ? "/title/00030004" : "nand:/title/00030004", blockSize);
 
 	//subtract, but don't go under 0
 	if (appSize > size)
@@ -539,7 +539,7 @@ unsigned long long getDsiFree()
 unsigned long long getDsiRealSize()
 {
 	struct statvfs st;
-	if (statvfs(sdnandMode ? "sd:/" : "nand:/", &st) == 0)
+	if (statvfs(sdnandMode ? "/" : "nand:/", &st) == 0)
 		return st.f_bsize * st.f_blocks;
 
 	return 0;
@@ -548,7 +548,7 @@ unsigned long long getDsiRealSize()
 unsigned long long getDsiRealFree()
 {
 	struct statvfs st;
-	if (statvfs(sdnandMode ? "sd:/" : "nand:/", &st) == 0)
+	if (statvfs(sdnandMode ? "/" : "nand:/", &st) == 0)
 		return st.f_bsize * st.f_bavail;
 
 	return 0;
@@ -557,7 +557,7 @@ unsigned long long getDsiRealFree()
 u32 getDsiClusterSize()
 {
 	struct statvfs st;
-	if (statvfs(sdnandMode ? "sd:/" : "nand:/", &st) == 0)
+	if (statvfs(sdnandMode ? "/" : "nand:/", &st) == 0)
 		return st.f_bsize;
 
 	return 0;

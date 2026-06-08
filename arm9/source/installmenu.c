@@ -24,7 +24,7 @@ static void _setHeader(Menu* m)
 {
 	if (!m) return;
 	if (currentDir[0] == '\0')
-		setMenuHeader(m, "sd:/");
+		setMenuHeader(m, useFlashcard ? "fat:/" : "sd:/");
 	else
 		setMenuHeader(m, currentDir);
 }
@@ -152,7 +152,7 @@ static void generateList(Menu* m)
 	DIR* dir = NULL;
 
 	if (currentDir[0] == '\0')
-		dir = opendir("sd:/");
+		dir = opendir("/");
 	else
 		dir = opendir(currentDir);
 

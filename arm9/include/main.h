@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 extern bool sdnandMode;
+extern bool useFlashcard;
 extern bool unlaunchFound;
 extern bool unlaunchPatches;
 extern u8 region;
