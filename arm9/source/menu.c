@@ -129,13 +129,13 @@ void printMenu(Menu* m)
 	if (!m) return;
 
 	//header
-	iprintf("\x1B[42m");	//green
-	iprintf("%.30s\n\n", m->header);
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("%.30s\n\n", m->header);
+	printf("\x1B[47m");	//white
 
 	if (m->itemCount <= 0)
 	{
-		iprintf("Back - [B]\n");
+		printf("Back - [B]\n");
 		return;
 	}
 
@@ -145,23 +145,23 @@ void printMenu(Menu* m)
 		if (m->items[i].label)
 		{
 			if (m->items[i].directory)
-				iprintf(" [%.28s]\n", m->items[i].label);
+				printf(" [%.28s]\n", m->items[i].label);
 			else
-				iprintf(" %.30s\n", m->items[i].label);
+				printf(" %.30s\n", m->items[i].label);
 		}
 		else
-			iprintf(" \n");
+			printf(" \n");
 	}
 
 	//cursor
-	iprintf("\x1b[%d;0H>", 2 + m->cursor);
+	printf("\x1b[%d;0H>", 2 + m->cursor);
 
 	//scroll arrows
 	if (m->page > 0)
-		iprintf("\x1b[2;31H^");
+		printf("\x1b[2;31H^");
 
 	if (m->nextPage)
-		iprintf("\x1b[21;31Hv");
+		printf("\x1b[21;31Hv");
 }
 
 static void _moveCursor(Menu* m, int dir)

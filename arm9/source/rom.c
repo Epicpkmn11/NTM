@@ -3,6 +3,7 @@
 #include "storage.h"
 #include <dirent.h>
 #include <nds.h>
+#include <limits.h>
 #include <malloc.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -149,13 +150,13 @@ void printRomInfo(char const* fpath)
 
 	if (!isDsiHeader(h))
 	{
-		iprintf("Could not read dsi header.\n");
+		printf("Could not read dsi header.\n");
 	}
 	else
 	{
 		if (!b)
 		{
-			iprintf("Could not read banner.\n");
+			printf("Could not read banner.\n");
 		}
 		else
 		{
@@ -164,49 +165,49 @@ void printRomInfo(char const* fpath)
 				char gameTitle[128+1];
 				getGameTitle(b, gameTitle, true);
 
-				iprintf("%s\n\n", gameTitle);
+				printf("%s\n\n", gameTitle);
 			}
 
 			//file size
 			{
-				iprintf("Size: ");
+				printf("Size: ");
 				unsigned long long romSize = getRomSize(fpath);
 				printBytes(romSize);
 				//size in blocks, rounded up
-				iprintf(" (%lld blocks)\n", ((romSize / BYTES_PER_BLOCK) * BYTES_PER_BLOCK + BYTES_PER_BLOCK) / BYTES_PER_BLOCK);
+				printf(" (%lld blocks)\n", ((romSize / BYTES_PER_BLOCK) * BYTES_PER_BLOCK + BYTES_PER_BLOCK) / BYTES_PER_BLOCK);
 			}
 
-			iprintf("Label: %.12s\n", h->ndshdr.gameTitle);
-			iprintf("Game Code: %.4s\n", h->ndshdr.gameCode);
+			printf("Label: %.12s\n", h->ndshdr.gameTitle);
+			printf("Game Code: %.4s\n", h->ndshdr.gameCode);
 
 			//system type
 			{
-				iprintf("Unit Code: ");
+				printf("Unit Code: ");
 
 				switch (h->ndshdr.unitCode)
 				{
-					case 0:  iprintf("NDS");     break;
-					case 2:  iprintf("NDS+DSi"); break;
-					case 3:  iprintf("DSi");     break;
-					default: iprintf("unknown");
+					case 0:  printf("NDS");     break;
+					case 2:  printf("NDS+DSi"); break;
+					case 3:  printf("DSi");     break;
+					default: printf("unknown");
 				}
 
-				iprintf("\n");
+				printf("\n");
 			}
 
 			//application type
 			{
-				iprintf("Program Type: ");
+				printf("Program Type: ");
 
 				switch (h->ndshdr.reserved1[7])
 				{
-					case 0x3: iprintf("Normal");    break;
-					case 0xB: iprintf("Sys");       break;
-					case 0xF: iprintf("Debug/Sys"); break;
-					default:  iprintf("unknown");
+					case 0x3: printf("Normal");    break;
+					case 0xB: printf("Sys");       break;
+					case 0xF: printf("Debug/Sys"); break;
+					default:  printf("unknown");
 				}
 
-				iprintf("\n");
+				printf("\n");
 			}
 
 			//DSi title ids
@@ -218,34 +219,69 @@ void printRomInfo(char const* fpath)
 					h->tid_high == 0x00030017 ||
 					h->tid_high == 0x00030000)
 				{
-					iprintf("Title ID: %08x %08x\n", (unsigned int)h->tid_high, (unsigned int)h->tid_low);
+					printf("Title ID: %08x %08x\n", (unsigned int)h->tid_high, (unsigned int)h->tid_low);
 				}
 			}
 
 			//print full file path
-			iprintf("\n%s\n", fpath);
+			printf("\n%s\n", fpath);
 
 			//print extra files
-			int extensionPos = strrchr(fpath, '.') - fpath;
-			char temp[PATH_MAX];
-			strcpy(temp, fpath);
-			strcpy(temp + extensionPos, ".tmd");
-			//DSi TMDs are 520, TMDs from NUS are 2,312. If 2,312 we can simply trim it to 520
-			int tmdSize = getFileSizePath(temp);
-			if (access(temp, F_OK) == 0)
-				printf("\t\x1B[%om%s\n\x1B[47m", (tmdSize == 520 || tmdSize == 2312) ? 047 : 041, strrchr(temp, '/') + 1);
+			//for backups
+			{
+				int extensionPos = strrchr(fpath, '.') - fpath;
+				char temp[PATH_MAX];
+				strcpy(temp, fpath);
+				strcpy(temp + extensionPos, ".tmd");
+				//DSi TMDs are 520, TMDs from NUS are 2,312. If 2,312 we can simply trim it to 520
+				int tmdSize = getFileSizePath(temp);
+				if (access(temp, F_OK) == 0)
+					printf("\t\x1B[%om%s\n\x1B[47m", (tmdSize == 520 || tmdSize == 2312) ? 047 : 041, strrchr(temp, '/') + 1);
+	
+				strcpy(temp + extensionPos, ".pub");
+				if (access(temp, F_OK) == 0)
+					printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == h->public_sav_size) ? 047 : 041, strrchr(temp, '/') + 1);
+	
+				strcpy(temp + extensionPos, ".prv");
+				if (access(temp, F_OK) == 0)
+					printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == h->private_sav_size) ? 047 : 041, strrchr(temp, '/') + 1);
+	
+				strcpy(temp + extensionPos, ".bnr");
+				if (access(temp, F_OK) == 0)
+					printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == 0x4000) ? 047 : 041, strrchr(temp, '/') + 1);
+			}
 
-			strcpy(temp + extensionPos, ".pub");
-			if (access(temp, F_OK) == 0)
-				printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == h->public_sav_size) ? 047 : 041, strrchr(temp, '/') + 1);
-
-			strcpy(temp + extensionPos, ".prv");
-			if (access(temp, F_OK) == 0)
-				printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == h->private_sav_size) ? 047 : 041, strrchr(temp, '/') + 1);
-
-			strcpy(temp + extensionPos, ".bnr");
-			if (access(temp, F_OK) == 0)
-				printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == 0x4000) ? 047 : 041, strrchr(temp, '/') + 1);
+			//for installs
+			{
+				int slashPos = strrchr(fpath, '/') - fpath;
+				char temp[PATH_MAX];
+				strcpy(temp, fpath);
+				strcpy(temp + slashPos, "/title.tmd");
+				//DSi TMDs are 520, TMDs from NUS are 2,312. If 2,312 we can simply trim it to 520
+				int tmdSize = getFileSizePath(temp);
+				if (access(temp, F_OK) == 0)
+					printf("\t\x1B[%om%s\n\x1B[47m", (tmdSize == 520 || tmdSize == 2312) ? 047 : 041, strrchr(temp, '/') + 1);
+	
+				//up another layer, this may fail if in SD root
+				temp[slashPos] = 0;
+				char *newSlashPos = strrchr(temp, '/');
+				if (newSlashPos)
+				{
+					slashPos = newSlashPos - temp;
+		
+					strcpy(temp + slashPos, "/data/public.sav");
+					if (access(temp, F_OK) == 0)
+						printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == h->public_sav_size) ? 047 : 041, strrchr(temp, '/') + 1);
+		
+					strcpy(temp + slashPos, "/data/private.sav");
+					if (access(temp, F_OK) == 0)
+						printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == h->private_sav_size) ? 047 : 041, strrchr(temp, '/') + 1);
+		
+					strcpy(temp + slashPos, "/data/banner.sav");
+					if (access(temp, F_OK) == 0)
+						printf("\t\x1B[%om%s\n\x1B[47m", (getFileSizePath(temp) == 0x4000) ? 047 : 041, strrchr(temp, '/') + 1);
+				}
+			}
 		}
 	}
 

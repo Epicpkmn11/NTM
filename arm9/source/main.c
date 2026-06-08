@@ -1,10 +1,13 @@
 #include "main.h"
+#include "crypto.h"
 #include "menu.h"
 #include "message.h"
 #include "nandio.h"
+#include "nds/arm9/exceptions.h"
 #include "storage.h"
 #include "version.h"
 #include <dirent.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -56,15 +59,15 @@ static int _mainMenu(int cursor)
 	//top screen
 	clearScreen(&topScreen);
 
-	iprintf("\t\tNAND Title Manager\n");
-	iprintf("\t\t\tmodified from\n");
-	iprintf("\tTitle Manager for HiyaCFW\n");
-	iprintf("\nversion %s\n", VER_NUMBER);
-	iprintf("\n\n\x1B[41mWARNING:\x1B[47m This tool can write to\nyour internal NAND!\n\nThis always has a risk, albeit\nlow, of \x1B[41mbricking\x1B[47m your system\nand should be done with caution!\n");
-	iprintf("\n\t  \x1B[46mhttps://dsi.cfw.guide\x1B[47m\n");
-	iprintf("\n\n \x1B[46mgithub.com/Epicpkmn11/NTM/wiki\x1B[47m\n");
-	iprintf("\x1b[22;0HJeff - 2018-2019");
-	iprintf("\x1b[23;0HPk11 - 2022-2023");
+	printf("\t\tNAND Title Manager\n");
+	printf("\t\t\tmodified from\n");
+	printf("\tTitle Manager for HiyaCFW\n");
+	printf("\nversion %s\n", VER_NUMBER);
+	printf("\n\n\x1B[41mWARNING:\x1B[47m This tool can write to\nyour internal NAND!\n\nThis always has a risk, albeit\nlow, of \x1B[41mbricking\x1B[47m your system\nand should be done with caution!\n");
+	printf("\n\t  \x1B[46mhttps://dsi.cfw.guide\x1B[47m\n");
+	printf("\n\n \x1B[46mgithub.com/Epicpkmn11/NTM/wiki\x1B[47m\n");
+	printf("\x1b[22;0HJeff - 2018-2019");
+	printf("\x1b[23;0HPk11 - 2022-2026");
 
 	//menu
 	Menu* m = newMenu();
@@ -89,7 +92,7 @@ static int _mainMenu(int cursor)
 	//bottom screen
 	printMenu(m);
 
-	while (pmMainLoop())
+	while (1)
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -109,6 +112,7 @@ static int _mainMenu(int cursor)
 
 int main(int argc, char **argv)
 {
+	defaultExceptionHandler();
 	srand(time(0));
 	keysSetRepeat(25, 5);
 	_setupScreens();
@@ -121,11 +125,28 @@ int main(int argc, char **argv)
 	}
 
 	//setup sd card access
-	g_dvmCalicoNandMount = 2; //mount nand, with writing enabled
 	if (!fatInitDefault())
 	{
 		messageBox("fatInitDefault()...\x1B[31mFailed\n\x1B[47m");
 		return 0;
+	}
+
+	//setup NAND access
+	if (!nandInit(false))
+	{
+		messageBox("nandInit()...\x1B[31mFailed\n\x1B[47m");
+		return 0;
+	}
+
+	//initialize crypto
+	{
+		fifoWaitValue32(FIFO_USER_01);
+
+		u32 consoleId[2];
+		consoleId[0] = fifoGetValue32(FIFO_USER_01);
+		consoleId[1] = fifoGetValue32(FIFO_USER_01);
+
+		dsi_crypt_init(consoleId);
 	}
 
 	//check for unlaunch and region
@@ -171,11 +192,14 @@ int main(int argc, char **argv)
 							{
 								unlaunchPatches = true;
 								fclose(tmd);
+								tmd = NULL;
 								break;
 							}
 						}
 					}
-					fclose(tmd);
+
+					if(tmd)
+						fclose(tmd);
 				}
 			}
 			else // check for "safe" unlaunch install
@@ -221,7 +245,7 @@ int main(int argc, char **argv)
 	//main menu
 	int cursor = 0;
 
-	while (pmMainLoop())
+	while (1)
 	{
 		cursor = _mainMenu(cursor);
 

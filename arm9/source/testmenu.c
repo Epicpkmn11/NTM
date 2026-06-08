@@ -6,7 +6,7 @@ void testMenu()
 {
 	//top screen
 	clearScreen(&topScreen);
-	iprintf("Storage Check Test\n\n");
+	printf("Storage Check Test\n\n");
 
 	//bottom screen
 	clearScreen(&bottomScreen);
@@ -16,60 +16,60 @@ void testMenu()
 
 	//home menu slots
 	{
-		iprintf("Free Home Menu Slots:\n");
+		printf("Free Home Menu Slots:\n");
 
 		free = getMenuSlotsFree();
-		iprintf("\t%d / ", free);
+		printf("\t%d / ", free);
 
 		size = getMenuSlots();
-		iprintf("%d\n", size);
+		printf("%d\n", size);
 	}
 
 	//dsi menu
 	{
-		iprintf("\nFree DSi Menu Space:\n\t");
+		printf("\nFree DSi Menu Space:\n\t");
 
 		free = getDsiFree();
 		printBytes(free);
-		iprintf(" / ");
+		printf(" / ");
 
 		size = getDsiSize();
 		printBytes(size);
-		iprintf("\n");
+		printf("\n");
 
-		iprintf("\t%d / %d blocks\n", free / BYTES_PER_BLOCK, size / BYTES_PER_BLOCK);
+		printf("\t%d / %d blocks\n", free / BYTES_PER_BLOCK, size / BYTES_PER_BLOCK);
 	}
 
 	//nand
 	if (!sdnandMode)
 	{
-		iprintf("\nFree NAND Space:\n\t");
+		printf("\nFree NAND Space:\n\t");
 
 		free = getDsiRealFree();
 		printBytes(free);
-		iprintf(" / ");
+		printf(" / ");
 
 		size = getDsiRealSize();
 		printBytes(size);
-		iprintf("\n");
+		printf("\n");
 	}
 
 	//SD Card
 	{
-		iprintf("\nFree SD Space:\n\t");
+		printf("\nFree SD Space:\n\t");
 
 		unsigned long long sdfree = getSDCardFree();
 		printBytes(sdfree);
-		iprintf(" / ");
+		printf(" / ");
 
 		unsigned long long sdsize = getSDCardSize();
 		printBytes(sdsize);
-		iprintf("\n");
+		printf("\n");
 
 		printf("\t%d / %d blocks\n", (unsigned int)(sdfree / BYTES_PER_BLOCK), (unsigned int)(sdsize / BYTES_PER_BLOCK));
 	}
 
 	//end
-	iprintf("\nBack - [B]\n");
+	printf("\nBack - [B]\n");
 	keyWait(KEY_B);
 }

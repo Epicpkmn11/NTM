@@ -3,6 +3,8 @@
 #include "message.h"
 #include <errno.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <sys/statvfs.h>
 
 #define TITLE_LIMIT 39
 
@@ -10,7 +12,7 @@
 void printBytes(unsigned long long bytes)
 {
 	if (bytes < 1024)
-		iprintf("%dB", (unsigned int)bytes);
+		printf("%dB", (unsigned int)bytes);
 
 	else if (bytes < 1024 * 1024)
 		printf("%.2fKB", (float)bytes / 1024.f);
@@ -37,25 +39,25 @@ void printProgressBar(float percent)
 	{
 		consoleSelect(&topScreen);
 
-		iprintf("\x1B[42m");	//green
+		printf("\x1B[42m");	//green
 
 		//Print frame
 		if (lastBars <= 0)
 		{
-			iprintf("\x1b[23;0H[");
-			iprintf("\x1b[23;31H]");
+			printf("\x1b[23;0H[");
+			printf("\x1b[23;31H]");
 		}
 
 		//Print bars
 		if (bars > 0)
 		{
 			for (int i = 0; i < bars; i++)
-				iprintf("\x1b[23;%dH|", 1 + i);
+				printf("\x1b[23;%dH|", 1 + i);
 		}
 
 		lastBars = bars;
 
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[47m");	//white
 	}
 }
 
@@ -63,7 +65,7 @@ void clearProgressBar()
 {
 	lastBars = 0;
 	consoleSelect(&topScreen);
-	iprintf("\x1b[23;0H                                ");
+	printf("\x1b[23;0H                                ");
 }
 
 //files
@@ -96,7 +98,6 @@ int copyFilePart(char const* src, u32 offset, u32 size, char const* dst)
 
 	if (!fin)
 	{
-		fclose(fin);
 		return 3;
 	}
 	else
@@ -109,7 +110,6 @@ int copyFilePart(char const* src, u32 offset, u32 size, char const* dst)
 		if (!fout)
 		{
 			fclose(fin);
-			fclose(fout);
 			return 4;
 		}
 		else
@@ -124,7 +124,7 @@ int copyFilePart(char const* src, u32 offset, u32 size, char const* dst)
 			#define BUFF_SIZE 128 //Arbitrary. A value too large freezes the ds.
 			char* buffer = (char*)malloc(BUFF_SIZE);
 
-			while (pmMainLoop())
+			while (1)
 			{
 				unsigned int toRead = BUFF_SIZE;
 				if (size - totalBytesRead < BUFF_SIZE)
@@ -170,7 +170,7 @@ unsigned long long getFileSizePath(char const* path)
 
 	FILE* f = fopen(path, "rb");
 	unsigned long long size = getFileSize(f);
-	fclose(f);
+	if (f) fclose(f);
 
 	return size;
 }
@@ -212,7 +212,7 @@ bool copyDir(char const* src, char const* dst)
 {
 	if (!src || !dst) return false;
 
-//	iprintf("copyDir\n%s\n%s\n\n", src, dst);
+//	printf("copyDir\n%s\n%s\n\n", src, dst);
 
 	bool result = true;
 
@@ -253,46 +253,46 @@ bool copyDir(char const* src, char const* dst)
 				char* fdst = (char*)malloc(strlen(dst) + strlen(ent->d_name) + 4);
 				sprintf(fdst, "%s/%s", dst, ent->d_name);
 
-//				iprintf("%s\n%s\n\n", fsrc, fdst);
-				iprintf("%s -> \n%s...", fsrc, fdst);
+//				printf("%s\n%s\n\n", fsrc, fdst);
+				printf("%s -> \n%s...", fsrc, fdst);
 
 				int ret = copyFile(fsrc, fdst);
 
 				if (ret != 0)
 				{
-					iprintf("\x1B[31m");	//red
-					iprintf("Fail\n");
-					iprintf("\x1B[33m");	//yellow
+					printf("\x1B[31m");	//red
+					printf("Fail\n");
+					printf("\x1B[33m");	//yellow
 
-					iprintf("%s\n", strerror(errno));
+					printf("%s\n", strerror(errno));
 /*
 					switch (ret)
 					{
 						case 1:
-							iprintf("Empty input path.\n");
+							printf("Empty input path.\n");
 							break;
 
 						case 2:
-							iprintf("Empty output path.\n");
+							printf("Empty output path.\n");
 							break;
 
 						case 3:
-							iprintf("Error opening input file.\n");
+							printf("Error opening input file.\n");
 							break;
 
 						case 4:
-							iprintf("Error opening output file.\n");
+							printf("Error opening output file.\n");
 							break;
 					}
 */
-					iprintf("\x1B[47m");	//white
+					printf("\x1B[47m");	//white
 					result = false;
 				}
 				else
 				{
-					iprintf("\x1B[42m");	//green
-					iprintf("Done\n");
-					iprintf("\x1B[47m");	//white
+					printf("\x1B[42m");	//green
+					printf("Done\n");
+					printf("\x1B[47m");	//white
 				}
 
 				free(fdst);
@@ -346,19 +346,19 @@ bool deleteDir(char const* path)
 				char fpath[512];
 				sprintf(fpath, "%s/%s", path, ent->d_name);
 
-				iprintf("%s...", fpath);
+				printf("%s...", fpath);
 				if (remove(fpath) != 0)
 				{
-					iprintf("\x1B[31m");
-					iprintf("Fail\n");
-					iprintf("\x1B[47m");
+					printf("\x1B[31m");
+					printf("Fail\n");
+					printf("\x1B[47m");
 					result = false;
 				}
 				else
 				{
-					iprintf("\x1B[42m");
-					iprintf("Done\n");
-					iprintf("\x1B[47m");
+					printf("\x1B[42m");
+					printf("Done\n");
+					printf("\x1B[47m");
 				}
 			}
 		}
@@ -366,19 +366,19 @@ bool deleteDir(char const* path)
 
 	closedir(dir);
 
-	iprintf("%s...", path);
+	printf("%s...", path);
 	if (remove(path) != 0)
 	{
-		iprintf("\x1B[31m");
-		iprintf("Fail\n");
-		iprintf("\x1B[47m");
+		printf("\x1B[31m");
+		printf("Fail\n");
+		printf("\x1B[47m");
 		result = false;
 	}
 	else
 	{
-		iprintf("\x1B[42m");
-		iprintf("Done\n");
-		iprintf("\x1B[47m");
+		printf("\x1B[42m");
+		printf("Done\n");
+		printf("\x1B[47m");
 	}
 
 	return result;

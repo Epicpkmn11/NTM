@@ -5,6 +5,7 @@
 #include "nandio.h"
 #include "storage.h"
 #include <dirent.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 enum {
@@ -36,7 +37,7 @@ void titleMenu()
 	}
 	else
 	{
-		while (pmMainLoop())
+		while (1)
 		{
 			swiWaitForVBlank();
 			scanKeys();
@@ -233,6 +234,8 @@ static void generateList(Menu* m)
 
 	if (m->cursor >= m->itemCount)
 		m->cursor = m->itemCount - 1;
+	if (m->cursor < 0)
+		m->cursor = 0;
 
 	printItem(m);
 	printMenu(m);
@@ -257,7 +260,7 @@ static int subMenu()
 
 	printMenu(m);
 
-	while (pmMainLoop())
+	while (1)
 	{
 		swiWaitForVBlank();
 		scanKeys();
@@ -367,7 +370,7 @@ static void backup(Menu* m)
 					fread(&appVersion, 1, 4, tmd);
 					fclose(tmd);
 
-					iprintf("%s -> \n%s...\n", path, dstpath);
+					printf("%s -> \n%s...\n", path, dstpath);
 					copyFile(path, dstpath);
 
 					//app
@@ -375,7 +378,7 @@ static void backup(Menu* m)
 					sprintf(dstpath, "%s/%s.nds", BACKUP_PATH, backname);
 					if (access(path, F_OK) == 0)
 					{
-						iprintf("%s -> \n%s...\n", path, dstpath);
+						printf("%s -> \n%s...\n", path, dstpath);
 						copyFile(path, dstpath);
 					}
 				}
@@ -386,7 +389,7 @@ static void backup(Menu* m)
 			sprintf(dstpath, "%s/%s.pub", BACKUP_PATH, backname);
 			if (access(path, F_OK) == 0)
 			{
-				iprintf("%s -> \n%s...\n", path, dstpath);
+				printf("%s -> \n%s...\n", path, dstpath);
 				copyFile(path, dstpath);
 			}
 
@@ -395,7 +398,7 @@ static void backup(Menu* m)
 			sprintf(dstpath, "%s/%s.prv", BACKUP_PATH, backname);
 			if (access(path, F_OK) == 0)
 			{
-				iprintf("%s -> \n%s...\n", path, dstpath);
+				printf("%s -> \n%s...\n", path, dstpath);
 				copyFile(path, dstpath);
 			}
 
@@ -404,7 +407,7 @@ static void backup(Menu* m)
 			sprintf(dstpath, "%s/%s.bnr", BACKUP_PATH, backname);
 			if (access(path, F_OK) == 0)
 			{
-				iprintf("%s -> \n%s...\n", path, dstpath);
+				printf("%s -> \n%s...\n", path, dstpath);
 				copyFile(path, dstpath);
 			}
 

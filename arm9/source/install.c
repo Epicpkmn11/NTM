@@ -10,6 +10,8 @@
 #include "crypto/ticket0.h"
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
+#include <malloc.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -30,7 +32,7 @@ static bool _patchGameCode(tDSiHeader* h)
 
 	if ((strcmp(h->ndshdr.gameCode, "####") == 0 && h->tid_low == 0x23232323) || (!*h->ndshdr.gameCode && h->tid_low == 0))
 	{
-		iprintf("Fixing Game Code...");
+		printf("Fixing Game Code...");
 		swiWaitForVBlank();
 
 		//set as standard app
@@ -49,9 +51,9 @@ static bool _patchGameCode(tDSiHeader* h)
 		}
 		while (_titleIsUsed(h));
 
-		iprintf("\x1B[42m");	//green
-		iprintf("Done\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[42m");	//green
+		printf("Done\n");
+		printf("\x1B[47m");	//white
 		return true;
 	}
 
@@ -64,13 +66,13 @@ static bool _iqueHack(tDSiHeader* h)
 
 	if (h->ndshdr.reserved1[8] == 0x80)
 	{
-		iprintf("iQue Hack...");
+		printf("iQue Hack...");
 
 		h->ndshdr.reserved1[8] = 0x00;
 
-		iprintf("\x1B[42m");	//green
-		iprintf("Done\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[42m");	//green
+		printf("Done\n");
+		printf("\x1B[47m");	//white
 		return true;
 	}
 
@@ -96,59 +98,59 @@ static unsigned long long _getSaveDataSize(tDSiHeader* h)
 
 static bool _checkSdSpace(unsigned long long size)
 {
-	iprintf("Enough room on SD card?...");
+	printf("Enough room on SD card?...");
 	swiWaitForVBlank();
 
 	if (getSDCardFree() < size)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("No\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("No\n");
+		printf("\x1B[47m");	//white
 		return false;
 	}
 
-	iprintf("\x1B[42m");	//green
-	iprintf("Yes\n");
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("Yes\n");
+	printf("\x1B[47m");	//white
 	return true;
 }
 
 static bool _checkDsiSpace(unsigned long long size, bool systemApp)
 {
-	iprintf("Enough room on DSi?...");
+	printf("Enough room on DSi?...");
 	swiWaitForVBlank();
 
 	//ensure there's at least 1 MiB free, to leave margin for error
 	if (((systemApp ? getDsiRealFree() : getDsiFree()) < size) || (((systemApp ? getDsiRealFree() : getDsiFree()) - size) < (1 << 20)))
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("No\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("No\n");
+		printf("\x1B[47m");	//white
 		return false;
 	}
 
-	iprintf("\x1B[42m");	//green
-	iprintf("Yes\n");
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("Yes\n");
+	printf("\x1B[47m");	//white
 	return true;
 }
 
 static bool _openMenuSlot()
 {
-	iprintf("Open DSi menu slot?...");
+	printf("Open DSi menu slot?...");
 	swiWaitForVBlank();
 
 	if (getMenuSlotsFree() <= 0)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("No\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("No\n");
+		printf("\x1B[47m");	//white
 		return false;
 	}
 
-	iprintf("\x1B[42m");	//green
-	iprintf("Yes\n");
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("Yes\n");
+	printf("\x1B[47m");	//white
 	return true;
 }
 
@@ -158,14 +160,14 @@ static void _createPublicSav(tDSiHeader* h, char* dataPath)
 
 	if (h->public_sav_size > 0)
 	{
-		iprintf("Creating public.sav...");
+		printf("Creating public.sav...");
 		swiWaitForVBlank();
 
 		if (!dataPath)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Failed\n");
+			printf("\x1B[47m");	//white
 		}
 		else
 		{
@@ -176,9 +178,9 @@ static void _createPublicSav(tDSiHeader* h, char* dataPath)
 
 			if (!f)
 			{
-				iprintf("\x1B[31m");	//red
-				iprintf("Failed\n");
-				iprintf("\x1B[47m");	//white
+				printf("\x1B[31m");	//red
+				printf("Failed\n");
+				printf("\x1B[47m");	//white
 			}
 			else
 			{
@@ -186,9 +188,9 @@ static void _createPublicSav(tDSiHeader* h, char* dataPath)
 				fputc(0, f);
 				initFatHeader(f);
 
-				iprintf("\x1B[42m");	//green
-				iprintf("Done\n");
-				iprintf("\x1B[47m");	//white
+				printf("\x1B[42m");	//green
+				printf("Done\n");
+				printf("\x1B[47m");	//white
 			}
 
 			fclose(f);
@@ -203,14 +205,14 @@ static void _createPrivateSav(tDSiHeader* h, char* dataPath)
 
 	if (h->private_sav_size > 0)
 	{
-		iprintf("Creating private.sav...");
+		printf("Creating private.sav...");
 		swiWaitForVBlank();
 
 		if (!dataPath)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Failed\n");
+			printf("\x1B[47m");	//white
 		}
 		else
 		{
@@ -221,9 +223,9 @@ static void _createPrivateSav(tDSiHeader* h, char* dataPath)
 
 			if (!f)
 			{
-				iprintf("\x1B[31m");	//red
-				iprintf("Failed\n");
-				iprintf("\x1B[47m");	//white
+				printf("\x1B[31m");	//red
+				printf("Failed\n");
+				printf("\x1B[47m");	//white
 			}
 			else
 			{
@@ -231,9 +233,9 @@ static void _createPrivateSav(tDSiHeader* h, char* dataPath)
 				fputc(0, f);
 				initFatHeader(f);
 
-				iprintf("\x1B[42m");	//green
-				iprintf("Done\n");
-				iprintf("\x1B[47m");	//white
+				printf("\x1B[42m");	//green
+				printf("Done\n");
+				printf("\x1B[47m");	//white
 			}
 
 			fclose(f);
@@ -248,14 +250,14 @@ static void _createBannerSav(tDSiHeader* h, char* dataPath)
 
 	if (h->appflags & 0x4)
 	{
-		iprintf("Creating banner.sav...");
+		printf("Creating banner.sav...");
 		swiWaitForVBlank();
 
 		if (!dataPath)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Failed\n");
+			printf("\x1B[47m");	//white
 		}
 		else
 		{
@@ -266,18 +268,18 @@ static void _createBannerSav(tDSiHeader* h, char* dataPath)
 
 			if (!f)
 			{
-				iprintf("\x1B[31m");	//red
-				iprintf("Failed\n");
-				iprintf("\x1B[47m");	//white
+				printf("\x1B[31m");	//red
+				printf("Failed\n");
+				printf("\x1B[47m");	//white
 			}
 			else
 			{
 				fseek(f, 0x4000 - 1, SEEK_SET);
 				fputc(0, f);
 
-				iprintf("\x1B[42m");	//green
-				iprintf("Done\n");
-				iprintf("\x1B[47m");	//white
+				printf("\x1B[42m");	//green
+				printf("Done\n");
+				printf("\x1B[47m");	//white
 			}
 
 			fclose(f);
@@ -290,14 +292,14 @@ static void createTicket(tDSiHeader *h, char* ticketPath)
 {
 	if (!h) return;
 
-	iprintf("Forging ticket...");
+	printf("Forging ticket...");
 	swiWaitForVBlank();
 
 	if (!ticketPath)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("Failed\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("Failed\n");
+		printf("\x1B[47m");	//white
 	}
 	else
 	{
@@ -317,9 +319,9 @@ static void createTicket(tDSiHeader *h, char* ticketPath)
 		// Encrypt
 		if (dsi_es_block_crypt(buffer, encryptedSize, ENCRYPT) != 0)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Failed\n");
+			printf("\x1B[47m");	//white
 			free(buffer);
 			return;
 		}
@@ -327,24 +329,24 @@ static void createTicket(tDSiHeader *h, char* ticketPath)
 		FILE *file = fopen(ticketPath, "wb");
 		if (!file)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Failed\n");
+			printf("\x1B[47m");	//white
 			free(buffer);
 			return;
 		}
 
 		if (fwrite(buffer, 1, encryptedSize, file) != encryptedSize)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Failed\n");
+			printf("\x1B[47m");	//white
 		}
 		else
 		{
-			iprintf("\x1B[42m");	//green
-			iprintf("Done\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[42m");	//green
+			printf("Done\n");
+			printf("\x1B[47m");	//white
 		}
 
 		free(buffer);
@@ -357,9 +359,9 @@ bool install(char* fpath, bool systemTitle)
 	bool result = false;
 
 	//check battery level
-	u32 batteryState = pmGetBatteryState();
-	u32 batteryLevel = batteryState & 0xF;
-	bool charging = batteryState & BIT(7);
+	u32 batteryState = getBatteryLevel();
+	u32 batteryLevel = batteryState & BATTERY_LEVEL_MASK;
+	bool charging = batteryState & BATTERY_CHARGER_CONNECTED;
 	while (batteryLevel < 7 && !charging)
 	{
 		if (choiceBox("\x1B[47mBattery is too low!\nPlease plug in the console.\n\nContinue?") == NO)
@@ -373,11 +375,11 @@ bool install(char* fpath, bool systemTitle)
 
 	if (!h)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("Error: ");
-		iprintf("\x1B[33m");	//yellow
-		iprintf("Could not open file.\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("Error: ");
+		printf("\x1B[33m");	//yellow
+		printf("Could not open file.\n");
+		printf("\x1B[47m");	//white
 		goto error;
 	}
 	else
@@ -396,11 +398,11 @@ bool install(char* fpath, bool systemTitle)
 		{}
 		else
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Error: ");
-			iprintf("\x1B[33m");	//yellow
-			iprintf("This is not a DSi rom.\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Error: ");
+			printf("\x1B[33m");	//yellow
+			printf("This is not a DSi rom.\n");
+			printf("\x1B[47m");	//white
 			goto error;
 		}
 
@@ -440,11 +442,11 @@ bool install(char* fpath, bool systemTitle)
 		//no system titles without Unlaunch
 		if (!unlaunchFound && h->tid_high != 0x00030004)
 		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Error: ");
-			iprintf("\x1B[33m");	//yellow
-			iprintf("This title cannot be\ninstalled without Unlaunch.\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[31m");	//red
+			printf("Error: ");
+			printf("\x1B[33m");	//yellow
+			printf("This title cannot be\ninstalled without Unlaunch.\n");
+			printf("\x1B[47m");	//white
 			goto error;
 		}
 
@@ -485,11 +487,11 @@ bool install(char* fpath, bool systemTitle)
 				sprintf(path, "nand:/title/%08lx/%08lx/content/title.tmd", h->tid_high, h->tid_low);
 				if (access(path, F_OK) == 0)
 				{
-					iprintf("\x1B[31m");	//red
-					iprintf("Error: ");
-					iprintf("\x1B[33m");	//yellow
-					iprintf("This title cannot be\ninstalled to SysNAND.\n");
-					iprintf("\x1B[47m");	//white
+					printf("\x1B[31m");	//red
+					printf("Error: ");
+					printf("\x1B[33m");	//yellow
+					printf("This title cannot be\ninstalled to SysNAND.\n");
+					printf("\x1B[47m");	//white
 					goto error;
 				}
 			}
@@ -516,7 +518,7 @@ bool install(char* fpath, bool systemTitle)
 			return false;
 
 		clearScreen(&bottomScreen);
-		iprintf("Installing %s\n\n", fpath); swiWaitForVBlank();
+		printf("Installing %s\n\n", fpath); swiWaitForVBlank();
 
 		//check for legit TMD, if found we'll generate a ticket which increases the size
 		int extensionPos = strrchr(fpath, '.') - fpath;
@@ -542,7 +544,7 @@ bool install(char* fpath, bool systemTitle)
 		}
 
 		//get install size
-		iprintf("Install Size: ");
+		printf("Install Size: ");
 		swiWaitForVBlank();
 
 		u32 clusterSize = getDsiClusterSize();
@@ -554,7 +556,7 @@ bool install(char* fpath, bool systemTitle)
 		if (tmdFound) installSize += clusterSize; //ticket, rounded up to cluster size
 
 		printBytes(installSize);
-		iprintf("\n");
+		printf("\n");
 
 		if (sdnandMode && !_checkSdSpace(installSize))
 			goto error;
@@ -562,12 +564,12 @@ bool install(char* fpath, bool systemTitle)
 		//system title patch
 		if (systemTitle)
 		{
-			iprintf("System Title Patch...");
+			printf("System Title Patch...");
 			swiWaitForVBlank();
 			h->tid_high = 0x00030015;
-			iprintf("\x1B[42m");	//green
-			iprintf("Done\n");
-			iprintf("\x1B[47m");	//white
+			printf("\x1B[42m");	//green
+			printf("Done\n");
+			printf("\x1B[47m");	//white
 
 			fixHeader = true;
 		}
@@ -654,9 +656,9 @@ bool install(char* fpath, bool systemTitle)
 
 			else
 			{
-				iprintf("\nDeleting:\n");
+				printf("\nDeleting:\n");
 				deleteDir(dirPath);
-				iprintf("\n");
+				printf("\n");
 			}
 		}
 
@@ -686,7 +688,7 @@ bool install(char* fpath, bool systemTitle)
 
 			//create 000000##.app
 			{
-				iprintf("Creating 000000%02x.app...", appVersion);
+				printf("Creating 000000%02x.app...", appVersion);
 				swiWaitForVBlank();
 
 				char appPath[80];
@@ -703,39 +705,39 @@ bool install(char* fpath, bool systemTitle)
 
 					if (result != 0)
 					{
-						iprintf("\x1B[31m");	//red
-						iprintf("Failed\n");
-						iprintf("\x1B[33m");	//yellow
-						iprintf("%s\n", appPath);
-						iprintf("%s\n", strerror(errno));
-						iprintf("\x1B[47m");	//white
+						printf("\x1B[31m");	//red
+						printf("Failed\n");
+						printf("\x1B[33m");	//yellow
+						printf("%s\n", appPath);
+						printf("%s\n", strerror(errno));
+						printf("\x1B[47m");	//white
 
 						goto error;
 					}
 
-					iprintf("\x1B[42m");	//green
-					iprintf("Done\n");
-					iprintf("\x1B[47m");	//white
+					printf("\x1B[42m");	//green
+					printf("Done\n");
+					printf("\x1B[47m");	//white
 				}
 
 				//pad out banner if it is the last part of the file
 				{
 					if (h->ndshdr.bannerOffset > (fileSize - 0x23C0))
 					{
-						iprintf("Padding banner...");
+						printf("Padding banner...");
 						swiWaitForVBlank();
 
 						if (padFile(appPath, h->ndshdr.bannerOffset + 0x23C0 - fileSize) == false)
 						{
-							iprintf("\x1B[31m");	//red
-							iprintf("Failed\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[31m");	//red
+							printf("Failed\n");
+							printf("\x1B[47m");	//white
 						}
 						else
 						{
-							iprintf("\x1B[42m");	//green
-							iprintf("Done\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[42m");	//green
+							printf("Done\n");
+							printf("\x1B[47m");	//white
 						}
 					}
 				}
@@ -744,7 +746,7 @@ bool install(char* fpath, bool systemTitle)
 				{
 					if (fixHeader)
 					{
-						iprintf("Fixing header...");
+						printf("Fixing header...");
 						swiWaitForVBlank();
 
 						//fix header checksum
@@ -759,18 +761,18 @@ bool install(char* fpath, bool systemTitle)
 
 						if (!f)
 						{
-							iprintf("\x1B[31m");	//red
-							iprintf("Failed\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[31m");	//red
+							printf("Failed\n");
+							printf("\x1B[47m");	//white
 						}
 						else
 						{
 							fseek(f, 0, SEEK_SET);
 							fwrite(h, sizeof(tDSiHeader), 1, f);
 
-							iprintf("\x1B[42m");	//green
-							iprintf("Done\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[42m");	//green
+							printf("Done\n");
+							printf("\x1B[47m");	//white
 						}
 
 						fclose(f);
@@ -838,14 +840,14 @@ bool install(char* fpath, bool systemTitle)
 		if (tmdFound)
 		{
 			//ensure folders exist
-			char ticketPath[32];
-			siprintf(ticketPath, "%s:/ticket", sdnandMode ? "sd" : "nand");
+			char ticketPath[35];
+			sprintf(ticketPath, "%s:/ticket", sdnandMode ? "sd" : "nand");
 			mkdir(ticketPath, 0777);
-			siprintf(ticketPath, "%s/%08lx", ticketPath, h->tid_high);
+			sprintf(ticketPath, "%s:/ticket/%08lx", sdnandMode ? "sd" : "nand", h->tid_high);
 			mkdir(ticketPath, 0777);
 
 			//actual tik path
-			siprintf(ticketPath, "%s/%08lx.tik", ticketPath, h->tid_low);
+			sprintf(ticketPath, "%s:/ticket/%08lx/%08lx.tik", sdnandMode ? "sd" : "nand", h->tid_high, h->tid_low);
 
 			if (access(ticketPath, F_OK) != 0 || (choicePrint("Ticket already exists.\nKeep it? (recommended)") == NO && choicePrint("Are you sure?") == YES))
 				createTicket(h, ticketPath);
@@ -853,10 +855,10 @@ bool install(char* fpath, bool systemTitle)
 
 		//end
 		result = true;
-		iprintf("\x1B[42m");	//green
-		iprintf("\nInstallation complete.\n");
-		iprintf("\x1B[47m");	//white
-		iprintf("Back - [B]\n");
+		printf("\x1B[42m");	//green
+		printf("\nInstallation complete.\n");
+		printf("\x1B[47m");	//white
+		printf("Back - [B]\n");
 		keyWait(KEY_A | KEY_B);
 
 		goto complete;
