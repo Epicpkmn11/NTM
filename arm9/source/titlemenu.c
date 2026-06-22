@@ -157,7 +157,7 @@ static void generateList(Menu* m)
 					{
 						char titleId[9];
 						sprintf(titleId, "%s%02x", blacklist[i][j], region);
-						if (strcmp(titleId, ent->d_name) == 0) 
+						if (strcmp(titleId, ent->d_name) == 0)
 							blacklisted = true;
 
 						// also blacklist specific all-region titles
@@ -449,7 +449,7 @@ static bool delete(Menu* m)
 		else
 		{
 			char dirPath[64];
-			sprintf(dirPath, "%.*s", sdnandMode ? 27 : 29, fpath);
+			sprintf(dirPath, "%.*s", sdnandMode ? 24 : 29, fpath);
 
 			if (!dirExists(dirPath))
 			{
