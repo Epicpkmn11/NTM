@@ -448,6 +448,8 @@ static bool delete(Menu* m)
 		}
 		else
 		{
+			//truncate to just the folder, 24 characters for
+			//"/title/########/########", add five for "nand:"
 			char dirPath[64];
 			sprintf(dirPath, "%.*s", sdnandMode ? 24 : 29, fpath);
 
